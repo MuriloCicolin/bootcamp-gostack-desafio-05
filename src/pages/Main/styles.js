@@ -71,3 +71,10 @@ export const List = styled.ul`
     }
   }
 `;
+
+export const RepoError = styled.small`
+  font-size: 14px;
+  color: red;
+  display: block;
+  margin-top: 10px;
+`;

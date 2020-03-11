@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 import Container from '../../Components/Container';
-import { Form, SubmitButton, List } from './styles';
+import { Form, SubmitButton, List, RepoError } from './styles';
 
 export default class Main extends Component {
   state = {
@@ -13,6 +13,7 @@ export default class Main extends Component {
     repositories: [],
     loading: false,
     error: false,
+    dupRepo: false,
   };
 
   // Carrega os dados de LocalStorage
@@ -43,7 +44,16 @@ export default class Main extends Component {
     const { newRepo, repositories } = this.state;
 
     try {
-      this.setState({ loading: true, error: false });
+      this.setState({ loading: true, error: false, dupRepo: false });
+
+      const repoExists = repositories.find(
+        repository => repository.name === newRepo
+      );
+
+      if (repoExists) {
+        this.setState({ dupRepo: true });
+        throw new Error('Repositório Duplicado');
+      }
 
       const response = await api.get(`/repos/${newRepo}`);
 
@@ -60,13 +70,12 @@ export default class Main extends Component {
       this.setState({
         error: true,
         loading: false,
-        newRepo: '',
       });
     }
   };
 
   render() {
-    const { newRepo, loading, repositories, error } = this.state;
+    const { newRepo, loading, repositories, error, dupRepo } = this.state;
 
     return (
       <Container>
@@ -91,6 +100,12 @@ export default class Main extends Component {
             )}
           </SubmitButton>
         </Form>
+
+        {error && (
+          <RepoError>
+            {dupRepo ? 'Repositório Duplicado' : 'Repositório não Encontrado'}
+          </RepoError>
+        )}
 
         <List>
           {repositories.map(repository => (
