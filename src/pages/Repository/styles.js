@@ -99,3 +99,31 @@ export const IssueList = styled.ul`
     }
   }
 `;
+
+export const IssuesFilter = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+
+  button {
+    border: 0;
+    border-radius: 4px;
+    outline: 0;
+    margin: 0 10px;
+    font-size: 16px;
+    background: #7159c1;
+    color: #fff;
+    font-weight: bold;
+    padding: 4px;
+
+    &:hover {
+      background: #4b0082;
+    }
+
+    &:nth-child(${props => props.active + 1}) {
+      background: #4b0082;
+      color: #fff;
+    }
+  }
+`;

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, IssuesFilter } from './styles';
 import Container from '../../Components/Container';
 
 export default class Repository extends Component {
@@ -19,6 +19,12 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filters: [
+      { state: 'all', text: 'Todos', active: true },
+      { state: 'open', text: 'Aberto', active: false },
+      { state: 'closed', text: 'Fechado', active: false },
+    ],
+    filterIndex: 0,
   };
 
   async componentDidMount() {
@@ -28,8 +34,8 @@ export default class Repository extends Component {
     const [repository, issues] = await Promise.all([
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
-        state: 'open',
-        per_page: 5,
+        state: 'all',
+        per_page: 30,
       }),
     ]);
 
@@ -40,8 +46,28 @@ export default class Repository extends Component {
     });
   }
 
+  loadIssues = async () => {
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+    const { filters, filterIndex } = this.state;
+
+    const response = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filters[filterIndex].state, // Ex: Open, Closed, All
+        per_page: 5,
+      },
+    });
+
+    this.setState({ issues: response.data });
+  };
+
+  handleClick = async filterIndex => {
+    await this.setState({ filterIndex });
+    this.loadIssues();
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, filters, filterIndex } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -55,6 +81,18 @@ export default class Repository extends Component {
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+
+        <IssuesFilter active={filterIndex}>
+          {filters.map((filter, index) => (
+            <button
+              type="button"
+              key={filter.text}
+              onClick={() => this.handleClick(index)}
+            >
+              {filter.text}
+            </button>
+          ))}
+        </IssuesFilter>
 
         <IssueList>
           {issues.map(issue => (
