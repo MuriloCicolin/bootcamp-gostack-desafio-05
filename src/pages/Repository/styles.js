@@ -127,3 +127,34 @@ export const IssuesFilter = styled.div`
     }
   }
 `;
+
+export const IssuePage = styled.div.attrs(props => ({
+  disabled: props.page,
+}))`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-content: center;
+  margin: 15px auto 0 auto;
+
+  button {
+    border: 0;
+    border-radius: 4px;
+    outline: 0;
+    font-size: 15px;
+    font-weight: bold;
+    background: #7159c1;
+    color: #fff;
+    padding: 3px;
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  p {
+    font-size: 16px;
+    font-weight: bold;
+  }
+`;

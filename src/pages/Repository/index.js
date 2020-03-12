@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
-import { Loading, Owner, IssueList, IssuesFilter } from './styles';
+import { Loading, Owner, IssueList, IssuesFilter, IssuePage } from './styles';
 import Container from '../../Components/Container';
 
 export default class Repository extends Component {
@@ -25,6 +25,7 @@ export default class Repository extends Component {
       { state: 'closed', text: 'Fechado', active: false },
     ],
     filterIndex: 0,
+    page: 1,
   };
 
   async componentDidMount() {
@@ -49,12 +50,13 @@ export default class Repository extends Component {
   loadIssues = async () => {
     const { match } = this.props;
     const repoName = decodeURIComponent(match.params.repository);
-    const { filters, filterIndex } = this.state;
+    const { filters, filterIndex, page } = this.state;
 
     const response = await api.get(`/repos/${repoName}/issues`, {
       params: {
         state: filters[filterIndex].state, // Ex: Open, Closed, All
         per_page: 5,
+        page,
       },
     });
 
@@ -62,12 +64,29 @@ export default class Repository extends Component {
   };
 
   handleClick = async filterIndex => {
-    await this.setState({ filterIndex });
+    await this.setState({ filterIndex, page: 1 });
+    this.loadIssues();
+  };
+
+  handlePage = async action => {
+    const { page } = this.state;
+
+    await this.setState({
+      page: action === 'Anterior' ? page - 1 : page + 1,
+    });
+
     this.loadIssues();
   };
 
   render() {
-    const { repository, issues, loading, filters, filterIndex } = this.state;
+    const {
+      repository,
+      issues,
+      loading,
+      filters,
+      filterIndex,
+      page,
+    } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -110,6 +129,20 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+
+        <IssuePage>
+          <button
+            type="button"
+            onClick={() => this.handlePage('Anterior')}
+            disabled={page < 2}
+          >
+            Anterior
+          </button>
+          <p>{page}</p>
+          <button type="button" onClick={() => this.handlePage('Próximo')}>
+            Próximo
+          </button>
+        </IssuePage>
       </Container>
     );
   }
